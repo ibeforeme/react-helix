@@ -79,5 +79,3 @@ ReactDOM.render(
   <Helix toStart={22} colors={['azure','crimson','green','tweety']}/>,
   document.getElementById('app')
 );
-
-module.hot.accept();
