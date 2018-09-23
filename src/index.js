@@ -1,19 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-class Nucleotide extends React.Component {
-  render () {
-    let styles = {
-      transform: 'rotateY('+this.props.transform+'deg)'
-    }
-    return (
-      <div style={styles} className={'wrapper '+this.props.color}>
-        <div className='uno'></div>
-        <div className='dos'></div>
-        <div className='tres'></div>
-      </div>
-    )
+function Nucleotide(props) {
+  let styles = {
+    transform: 'rotateY('+props.transform+'deg)'
   }
+  return (
+    <div style={styles} className={'wrapper '+props.color}>
+      <div className='uno'></div>
+      <div className='dos'></div>
+      <div className='tres'></div>
+    </div>
+  )
 }
 
 class Helix extends React.Component {
