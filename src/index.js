@@ -2,9 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 function Nucleotide(props) {
-  let styles = {
+  props.update();
+
+  const styles = {
     transform: 'rotateY('+props.transform+'deg)'
   }
+
   return (
     <div style={styles} className={'wrapper '+props.color}>
       <div className='uno'></div>
@@ -17,10 +20,14 @@ function Nucleotide(props) {
 class Helix extends React.Component {
   constructor(props) {
     super(props);
+
     this.state={
       rows:Array(this.props.toStart).fill(null),
-      transform:0
+      transform:0,
+      background:'#000000'
     };
+
+    this.updateBackground = this.updateBackground.bind(this)
   }
 
   addRow(color) {
@@ -31,6 +38,23 @@ class Helix extends React.Component {
     var nsa = this.state.rows.slice();
     nsa.pop();
     this.setState({rows: nsa});
+  }
+
+  updateBackground() {
+    const y = this.state.rows.filter((x) => {return x==='tweety'}).length;
+    const r = this.cleanUp(this.state.rows.filter((x) => {return x==='crimson'}).length+y);
+    const g = this.cleanUp(this.state.rows.filter((x) => {return x==='green'}).length+y);
+    const b = this.cleanUp(this.state.rows.filter((x) => {return x==='azure'}).length);
+    const bg = '#'+r+g+b;
+    this.state.background = bg;
+  }
+
+  cleanUp(n) {
+    n = n*2;
+    if (n > 99) {
+      n = 99;
+    }
+    return n.toString().padStart(2,'0');
   }
 
   componentDidMount() {
@@ -50,18 +74,22 @@ class Helix extends React.Component {
   }
 
   render() {
+    const styles = {
+      backgroundColor: this.state.background
+    }
     return (
-      <div id="holder">
+      <div id="holder" style={styles}>
         <div id="controls">
+          <p>Adding and removing colors adjusts the DNA of the app's background color.</p>
           {this.props.colors.map((color,i) => {
-            return <button onClick={() => this.addRow(color,i)} key={color}>Add {color}</button>
+            return <button onClick={() => this.addRow(color,i)} key={color}>Add {color} ({this.state.rows.filter((x) => {return x===color}).length})</button>
           })}
           <button onClick={() => this.removeLast()}>Remove Last</button>
         </div>
         <div id="double">
           <div id="helix">
             {this.state.rows.map((color,k) => {
-              return <Nucleotide color={color} transform={this.state.transform-(k*10)} key={k}></Nucleotide>
+              return <Nucleotide color={color} transform={this.state.transform-(k*10)} key={k} update={this.updateBackground}></Nucleotide>
             })}
           </div>
         </div>
