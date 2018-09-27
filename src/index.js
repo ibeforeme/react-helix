@@ -64,7 +64,10 @@ class Helix extends React.Component {
   }
 
   clear() {
-    this.setState({rows: []});
+    this.setState({
+      rows: [],
+      background:'rgb(0,0,0)'
+    });
   }
 
   render() {
