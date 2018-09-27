@@ -1,5 +1,5 @@
 # react-helix
-Background color DNA using React
+Scaling background color DNA using React
 
 npm install: install dependencies
 

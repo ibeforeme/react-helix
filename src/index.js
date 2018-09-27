@@ -2,17 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 function Nucleotide(props) {
-  props.update();
-
-  const styles = {
-    transform: 'rotateY('+props.transform+'deg)'
-  }
-
   return (
-    <div style={styles} className={'wrapper '+props.color}>
-      <div className='uno'></div>
-      <div className='dos'></div>
-      <div className='tres'></div>
+    <div style={{transform: 'rotateY('+props.transform+'deg)'}} className={'wrapper '+props.color}>
+      <div className='node'></div>
+      <div className='bar'></div>
+      <div className='node'></div>
     </div>
   )
 }
@@ -24,53 +18,53 @@ class Helix extends React.Component {
     this.state={
       rows:Array(this.props.toStart).fill(null),
       transform:0,
-      background:'#000000'
+      background:'rgb(0,0,0)'
     };
-
-    this.updateBackground = this.updateBackground.bind(this)
-  }
-
-  addRow(color) {
-    this.setState({rows:[...this.state.rows,color]});
-  }
-
-  removeLast() {
-    var nsa = this.state.rows.slice();
-    nsa.pop();
-    this.setState({rows: nsa});
-  }
-
-  updateBackground() {
-    const y = this.state.rows.filter((x) => {return x==='tweety'}).length;
-    const r = this.cleanUp(this.state.rows.filter((x) => {return x==='crimson'}).length+y);
-    const g = this.cleanUp(this.state.rows.filter((x) => {return x==='green'}).length+y);
-    const b = this.cleanUp(this.state.rows.filter((x) => {return x==='azure'}).length);
-    const bg = '#'+r+g+b;
-    this.state.background = bg;
-  }
-
-  cleanUp(n) {
-    n = n*2;
-    if (n > 99) {
-      n = 99;
-    }
-    return n.toString().padStart(2,'0');
   }
 
   componentDidMount() {
     this.state.rows.map((nothing,i) => {
-      this.state.rows[i]=this.props.colors[i%4];
+      this.state.rows[i]=this.props.colors[i%this.props.colors.length];
     });
     this.interval = setInterval(() => {
-      this.setState({transform:this.state.transform+0.25});
-      if (this.state.transform === 360) {
-        this.setState({transform:0});
-      }
-    },10);
+      this.setState({transform:this.state.transform+1});
+    },50);
   }
 
   componentWillUnmount(){
     clearInterval(this.interval);
+  }
+
+  addNucleotide(color) {
+    const nsa = this.state.rows.slice();
+    const total = nsa.filter(c => c===color).length;
+    if (total < this.props.max) {
+      nsa.push(color);
+      this.setState({rows: nsa});
+    }
+    this.updateBackground();
+  }
+
+  removeNucleotide(color) {
+    const nsa = this.state.rows.slice();
+    const index = nsa.lastIndexOf(color);
+    if (index !== -1) {
+      nsa.splice(index,1);
+      this.setState({rows: nsa});
+    }
+    this.updateBackground();
+  }
+
+  updateBackground() {
+    const r = this.state.rows.filter(c => c==='red').length*this.props.modifier;
+    const g = this.state.rows.filter(c => c==='green').length*this.props.modifier;
+    const b = this.state.rows.filter(c => c==='blue').length*this.props.modifier;
+    const rgb = 'rgb('+r+','+g+','+b+')';
+    this.state.background = rgb;
+  }
+
+  clear() {
+    this.setState({rows: []});
   }
 
   render() {
@@ -80,26 +74,33 @@ class Helix extends React.Component {
     return (
       <div id="holder" style={styles}>
         <div id="controls">
-          <p>Adding and removing colors adjusts the DNA of the app's background color.</p>
           {this.props.colors.map((color,i) => {
-            return <button onClick={() => this.addRow(color,i)} key={color}>Add {color} ({this.state.rows.filter((x) => {return x===color}).length})</button>
+            return ([
+              <label key={'label_'+color}>{color}</label>,
+              <p key={'p_'+color}>
+                <button key={'remove_'+color} className={(this.state.rows.filter(c => c===color).length <= 0) ? 'max' : ''} onClick={() => this.removeNucleotide(color)}>-</button>
+                <span key={'total_'+color}>{this.state.rows.filter((x) => {return x===color}).length*this.props.modifier}</span>
+                <button key={'add_'+color} className={(this.state.rows.filter(c => c===color).length >= this.props.max) ? 'max' : ''} onClick={() => this.addNucleotide(color)}>+</button>
+              </p>
+            ])
           })}
-          <button onClick={() => this.removeLast()}>Remove Last</button>
+          <p><button className="clear" onClick={() => this.clear()}>Clear</button></p>
         </div>
         <div id="double">
           <div id="helix">
             {this.state.rows.map((color,k) => {
-              return <Nucleotide color={color} transform={this.state.transform-(k*10)} key={k} update={this.updateBackground}></Nucleotide>
+              return <Nucleotide color={color} transform={this.state.transform-(k*this.props.delay)} key={k} update={this.updateBackground}></Nucleotide>
             })}
           </div>
         </div>
       </div>
     )
+    this.updateBackground();
   }
 }
 
 ReactDOM.render(
-  <Helix toStart={16} colors={['azure','crimson','green','tweety']}/>,
+  <Helix toStart={12} modifier={5} max={51} delay={10} colors={['red','green','blue']}/>,
   document.getElementById('app')
 );
 
